@@ -31,7 +31,7 @@ fn load_input(quest: usize, part: usize, example: usize) -> String {
     let path = home_dir().unwrap().join("ec-input").join(if example == 0 {
         format!("everybody_codes_e2025_q{quest:02}_p{part}.txt")
     } else {
-        format!("everybody_codes_e2025_q{quest:02}_p{part}_ex{example}.txt")
+        format!("everybody_codes_e2025_q{quest:02}_ex{example}.txt")
     });
 
     read_to_string(path).unwrap()

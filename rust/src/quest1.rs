@@ -25,7 +25,25 @@ fn part1(input: String) -> QuestResult {
 }
 
 fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let (names, moves) = input.split_once("\n\n").unwrap();
+
+    let names: Vec<_> = names.split(',').collect();
+
+    let mut i: usize = 0;
+
+    for m in moves.split(',') {
+        let (dir, n) = m.split_at(1);
+
+        let n: usize = n.parse().unwrap();
+
+        i = match dir {
+            "R" => i + n,
+            "L" => i + names.len() - n,
+            _ => panic!(),
+        } % names.len();
+    }
+
+    QuestResult::Text(names[i].to_owned())
 }
 
 fn part3(input: String) -> QuestResult {
