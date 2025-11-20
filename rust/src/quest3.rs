@@ -47,5 +47,26 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let mut crates: Vec<u32> =
+        input.split(',').map(|x| x.parse().unwrap()).collect();
+
+    crates.sort();
+
+    let mut numsets = 0;
+    let mut numleft = crates.len();
+
+    while numleft > 0 {
+        numsets += 1;
+        let mut cursize = 0;
+
+        for x in crates.iter_mut() {
+            if *x > 0 && *x > cursize {
+                cursize = *x;
+                *x = 0;
+                numleft -= 1;
+            }
+        }
+    }
+
+    QuestResult::Number(numsets as i64)
 }
