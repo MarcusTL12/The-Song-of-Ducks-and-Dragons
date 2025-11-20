@@ -1,10 +1,11 @@
+use itertools::{Itertools, MinMaxResult};
+
 use crate::{Quest, QuestResult};
-use std::io::Write;
 
 pub const PARTS: Quest = [part1, part2, part3];
 
-fn part1(input: String) -> QuestResult {
-    let mut numbers = input
+fn compute_quality(line: &str) -> u64 {
+    let mut numbers = line
         .split_once(':')
         .unwrap()
         .1
@@ -12,8 +13,6 @@ fn part1(input: String) -> QuestResult {
         .map(|x| x.parse::<u8>().unwrap());
 
     let mut fishbone = vec![(numbers.next().unwrap(), None, None)];
-    let mut buf = Vec::new();
-    write!(&mut buf, "{}", fishbone[0].0).unwrap();
 
     for x in numbers {
         let mut found_place = false;
@@ -31,15 +30,26 @@ fn part1(input: String) -> QuestResult {
 
         if !found_place {
             fishbone.push((x, None, None));
-            write!(&mut buf, "{x}").unwrap();
         }
     }
 
-    QuestResult::Text(String::from_utf8(buf).unwrap())
+    fishbone
+        .into_iter()
+        .fold(0, |x, (d, _, _)| 10 * x + d as u64)
+}
+
+fn part1(input: String) -> QuestResult {
+    QuestResult::Number(compute_quality(&input) as i64)
 }
 
 fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let ans = match input.lines().map(compute_quality).minmax() {
+        MinMaxResult::NoElements => panic!(),
+        MinMaxResult::OneElement(_) => 0,
+        MinMaxResult::MinMax(lo, hi) => hi - lo,
+    };
+
+    QuestResult::Number(ans as i64)
 }
 
 fn part3(input: String) -> QuestResult {
