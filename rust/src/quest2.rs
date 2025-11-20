@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use regex::Regex;
 
 use crate::{Quest, QuestResult};
@@ -75,9 +76,9 @@ fn part2(input: String) -> QuestResult {
 fn part3(input: String) -> QuestResult {
     let [x0, y0] = parse_input(&input);
 
-    let ans = (x0..)
-        .take(1001)
-        .flat_map(|x| (y0..).take(1001).map(move |y| [x, y]))
+    let ans = (x0..=x0 + 1000)
+        .into_par_iter()
+        .flat_map(|x| (y0..=y0 + 1000).into_par_iter().map(move |y| [x, y]))
         .filter(should_engrave)
         .count();
 
