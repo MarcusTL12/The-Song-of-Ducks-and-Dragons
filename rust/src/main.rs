@@ -8,6 +8,7 @@ mod quest1;
 mod quest2;
 mod quest3;
 mod quest4;
+mod quest5;
 
 #[derive(Debug)]
 enum QuestResult {
@@ -31,6 +32,7 @@ const QUESTS: &[Quest] = &[
     quest2::PARTS,
     quest3::PARTS,
     quest4::PARTS,
+    quest5::PARTS,
 ];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
