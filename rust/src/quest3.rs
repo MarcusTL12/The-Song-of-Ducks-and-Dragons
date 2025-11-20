@@ -22,7 +22,28 @@ fn part1(input: String) -> QuestResult {
 }
 
 fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let mut crates: Vec<u32> =
+        input.split(',').map(|x| x.parse().unwrap()).collect();
+
+    crates.sort();
+
+    let mut numcrates = 0;
+    let mut cursize = 0;
+    let mut cursum = 0;
+
+    for x in crates {
+        if x > cursize {
+            numcrates += 1;
+            cursize = x;
+            cursum += x;
+        }
+
+        if numcrates == 20 {
+            break;
+        }
+    }
+
+    QuestResult::Number(cursum as i64)
 }
 
 fn part3(input: String) -> QuestResult {
