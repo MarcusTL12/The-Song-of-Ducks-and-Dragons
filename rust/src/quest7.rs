@@ -49,6 +49,20 @@ fn part2(input: String) -> QuestResult {
     QuestResult::Number(ans as i64)
 }
 
+fn recurse_possibilities(curlen: usize, rules: &[&[u8]; 256]) -> usize {
+    let 
+}
+
 fn part3(input: String) -> QuestResult {
+    let (prefixes, rule_lookup) = parse_input(&input);
+
+    for prefix in prefixes
+        .split(',')
+        .filter(|name| fits_rules(name.as_bytes(), &rule_lookup))
+    {
+        let mut len = prefix.len();
+        // let 
+    }
+
     todo!("\n{input}")
 }
