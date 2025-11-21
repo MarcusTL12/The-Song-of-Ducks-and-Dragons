@@ -16,20 +16,24 @@ fn part1(input: String) -> QuestResult {
 }
 
 fn part2(input: String) -> QuestResult {
-    let mut knights = [0; 3];
-    let mut pairs = [0; 3];
+    let ans = input.as_bytes().iter().fold(
+        [[0; 3]; 2],
+        |[mut knights, mut pairs], x| {
+            let i = ((x & !0x20) - b'A') as usize;
 
-    for &x in input.as_bytes() {
-        let i = ((x & !0x20) - b'A') as usize;
+            if (x & 0x20) == 0 {
+                knights[i] += 1;
+            } else {
+                pairs[i] += knights[i];
+            }
 
-        if (x & 0x20) == 0 {
-            knights[i] += 1;
-        } else {
-            pairs[i] += knights[i];
-        }
-    }
+            [knights, pairs]
+        },
+    )[1]
+    .iter()
+    .sum();
 
-    QuestResult::Number(pairs.into_iter().sum::<i64>())
+    QuestResult::Number(ans)
 }
 
 fn part3(input: String) -> QuestResult {
