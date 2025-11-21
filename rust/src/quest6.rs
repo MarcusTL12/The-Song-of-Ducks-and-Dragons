@@ -3,18 +3,16 @@ use crate::{Quest, QuestResult};
 pub const PARTS: Quest = [part1, part2, part3];
 
 fn part1(input: String) -> QuestResult {
-    let mut n_knights = 0;
-    let mut n_pairs = 0;
+    let [_, ans] =
+        input
+            .chars()
+            .fold([0, 0], |[n_knights, n_pairs], x| match x {
+                'A' => [n_knights + 1, n_pairs],
+                'a' => [n_knights, n_pairs + n_knights],
+                _ => [n_knights, n_pairs],
+            });
 
-    for x in input.chars() {
-        match x {
-            'A' => n_knights += 1,
-            'a' => n_pairs += n_knights,
-            _ => {}
-        }
-    }
-
-    QuestResult::Number(n_pairs)
+    QuestResult::Number(ans)
 }
 
 fn part2(input: String) -> QuestResult {
