@@ -1,3 +1,5 @@
+#![feature(array_windows)]
+
 use std::{env, fmt::Display, fs::read_to_string, time::Instant};
 
 use home::home_dir;
@@ -8,6 +10,7 @@ mod quest3;
 mod quest4;
 mod quest5;
 mod quest6;
+mod quest7;
 
 #[derive(Debug)]
 enum QuestResult {
@@ -33,6 +36,7 @@ const QUESTS: &[Quest] = &[
     quest4::PARTS,
     quest5::PARTS,
     quest6::PARTS,
+    quest7::PARTS,
 ];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
