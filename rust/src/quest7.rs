@@ -10,7 +10,7 @@ fn fits_rules(name: &[u8], rules: &[&[u8]; 256]) -> bool {
     name.array_windows().all(|&x| check_rules(x, rules))
 }
 
-fn part1(input: String) -> QuestResult {
+fn parse_input(input: &str) -> (&str, [&[u8]; 256]) {
     let (names, rules) = input.split_once("\n\n").unwrap();
 
     let mut rule_lookup: [&[u8]; 256] = [&[]; 256];
@@ -22,6 +22,12 @@ fn part1(input: String) -> QuestResult {
             to.as_bytes();
     }
 
+    (names, rule_lookup)
+}
+
+fn part1(input: String) -> QuestResult {
+    let (names, rule_lookup) = parse_input(&input);
+
     let ans = names
         .split(',')
         .find(|name| fits_rules(name.as_bytes(), &rule_lookup))
@@ -31,7 +37,16 @@ fn part1(input: String) -> QuestResult {
 }
 
 fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let (names, rule_lookup) = parse_input(&input);
+
+    let ans = names
+        .split(',')
+        .enumerate()
+        .filter(|(_, name)| fits_rules(name.as_bytes(), &rule_lookup))
+        .map(|(i, _)| i + 1)
+        .sum::<usize>();
+
+    QuestResult::Number(ans as i64)
 }
 
 fn part3(input: String) -> QuestResult {
