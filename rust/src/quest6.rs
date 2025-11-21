@@ -37,5 +37,42 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    const REPEATS: usize = 1000;
+    const MAXDIST: usize = 1000;
+
+    let mut knights = [0; 3];
+    let mut novices = [0; 3];
+
+    let mut pairs = 0;
+
+    let input = input.as_bytes();
+
+    let totlen = input.len() * REPEATS;
+
+    for head in 0..totlen {
+        if head > MAXDIST {
+            let tail = head - MAXDIST - 1;
+            let x_tail = input[tail % input.len()];
+            let i = ((x_tail & !0x20) - b'A') as usize;
+
+            if (x_tail & 0x20) == 0 {
+                knights[i] -= 1;
+            } else {
+                novices[i] -= 1;
+            }
+        }
+
+        let x_head = input[head % input.len()];
+        let i = ((x_head & !0x20) - b'A') as usize;
+
+        if (x_head & 0x20) == 0 {
+            pairs += novices[i];
+            knights[i] += 1;
+        } else {
+            pairs += knights[i];
+            novices[i] += 1;
+        }
+    }
+
+    QuestResult::Number(pairs)
 }
