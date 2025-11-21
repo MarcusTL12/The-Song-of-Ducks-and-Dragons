@@ -1,5 +1,4 @@
 use itertools::{Itertools, MinMaxResult};
-use rayon::str::ParallelString;
 
 use crate::{Quest, QuestResult};
 
