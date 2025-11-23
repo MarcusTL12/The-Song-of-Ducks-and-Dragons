@@ -37,5 +37,28 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    const NAILS: u32 = 256;
+
+    let lines: Vec<[u32; 2]> = input
+        .split(',')
+        .map(|x| x.parse().unwrap())
+        .map_windows(|&[a, b]| if a < b { [a, b] } else { [b, a] })
+        .collect();
+
+    let ans = (1..NAILS)
+        .flat_map(|a1| (a1 + 1..=NAILS).map(move |b1| [a1, b1]))
+        .map(|[a1, b1]| {
+            lines
+                .iter()
+                .filter(move |&&[a2, b2]| {
+                    a1 < a2 && a2 < b1 && b1 < b2
+                        || a2 < a1 && a1 < b2 && b2 < b1
+                        || a1 == a2 && b1 == b2
+                })
+                .count()
+        })
+        .max()
+        .unwrap();
+
+    QuestResult::Number(ans as i64)
 }
