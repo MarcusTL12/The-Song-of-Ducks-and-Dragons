@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{Quest, QuestResult};
 
 pub const PARTS: Quest = [part1, part2, part3];
@@ -50,6 +52,7 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn recurse_possibilities(
+    memo: &mut HashMap<(usize, u8), usize>,
     curlen: usize,
     curlast: u8,
     rules: &[&[u8]; 256],
@@ -58,17 +61,29 @@ fn recurse_possibilities(
         return 1;
     }
 
-    (if curlen >= 7 { 1 } else { 0 })
+    let k = (curlen, curlast);
+
+    if let Some(&x) = memo.get(&k) {
+        return x;
+    }
+
+    let ans = (if curlen >= 7 { 1 } else { 0 })
         + rules[curlast as usize]
             .iter()
             .cloned()
             .filter(|&x| x != b',')
-            .map(|next| recurse_possibilities(curlen + 1, next, rules))
-            .sum::<usize>()
+            .map(|next| recurse_possibilities(memo, curlen + 1, next, rules))
+            .sum::<usize>();
+
+    memo.insert(k, ans);
+
+    ans
 }
 
 fn part3(input: String) -> QuestResult {
     let (prefixes, rule_lookup) = parse_input(&input);
+
+    let mut memo = HashMap::new();
 
     let ans = prefixes
         .split(',')
@@ -80,6 +95,7 @@ fn part3(input: String) -> QuestResult {
         })
         .map(|prefix| {
             recurse_possibilities(
+                &mut memo,
                 prefix.len(),
                 *prefix.as_bytes().last().unwrap(),
                 &rule_lookup,
