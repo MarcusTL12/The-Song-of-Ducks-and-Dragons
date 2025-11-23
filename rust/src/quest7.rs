@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use crate::{Quest, QuestResult};
 
@@ -52,7 +52,7 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn recurse_possibilities(
-    memo: &mut BTreeMap<(usize, u8), usize>,
+    memo: &mut HashMap<(usize, u8), usize>,
     curlen: usize,
     curlast: u8,
     rules: &[&[u8]; 256],
@@ -83,7 +83,7 @@ fn recurse_possibilities(
 fn part3(input: String) -> QuestResult {
     let (prefixes, rule_lookup) = parse_input(&input);
 
-    let mut memo = BTreeMap::new();
+    let mut memo = HashMap::new();
 
     let ans = prefixes
         .split(',')
