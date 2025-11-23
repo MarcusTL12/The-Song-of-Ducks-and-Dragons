@@ -49,20 +49,39 @@ fn part2(input: String) -> QuestResult {
     QuestResult::Number(ans as i64)
 }
 
-fn recurse_possibilities(curlen: usize, rules: &[&[u8]; 256]) -> usize {
-    let 
+fn recurse_possibilities(
+    curlen: usize,
+    curlast: u8,
+    rules: &[&[u8]; 256],
+) -> usize {
+    if curlen == 11 {
+        return 1;
+    }
+
+    (if curlen >= 7 { 1 } else { 0 })
+        + rules[curlast as usize]
+            .iter()
+            .cloned()
+            .filter(|&x| x != b',')
+            .map(|next| recurse_possibilities(curlen + 1, next, rules))
+            .sum::<usize>()
 }
 
 fn part3(input: String) -> QuestResult {
     let (prefixes, rule_lookup) = parse_input(&input);
 
-    for prefix in prefixes
+    let ans = prefixes
         .split(',')
         .filter(|name| fits_rules(name.as_bytes(), &rule_lookup))
-    {
-        let mut len = prefix.len();
-        // let 
-    }
+        .map(|prefix| {
+            dbg!(prefix);
+            recurse_possibilities(
+                prefix.len(),
+                *prefix.as_bytes().last().unwrap(),
+                &rule_lookup,
+            )
+        })
+        .sum::<usize>();
 
-    todo!("\n{input}")
+    QuestResult::Number(ans as i64)
 }
