@@ -72,9 +72,13 @@ fn part3(input: String) -> QuestResult {
 
     let ans = prefixes
         .split(',')
-        .filter(|name| fits_rules(name.as_bytes(), &rule_lookup))
+        .filter(|prefix| fits_rules(prefix.as_bytes(), &rule_lookup))
+        .filter(|&prefix| {
+            !prefixes
+                .split(',')
+                .any(|other| prefix != other && prefix.starts_with(other))
+        })
         .map(|prefix| {
-            dbg!(prefix);
             recurse_possibilities(
                 prefix.len(),
                 *prefix.as_bytes().last().unwrap(),
