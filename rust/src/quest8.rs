@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use crate::{Quest, QuestResult};
 
 pub const PARTS: Quest = [part1, part2, part3];
@@ -46,7 +48,8 @@ fn part3(input: String) -> QuestResult {
         .collect();
 
     let ans = (1..NAILS)
-        .flat_map(|a1| (a1 + 1..=NAILS).map(move |b1| [a1, b1]))
+        .into_par_iter()
+        .flat_map_iter(|a1| (a1 + 1..=NAILS).map(move |b1| [a1, b1]))
         .map(|[a1, b1]| {
             lines
                 .iter()
