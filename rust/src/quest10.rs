@@ -147,29 +147,152 @@ fn part2(input: String) -> QuestResult {
         eaten += propagate_sheep(&mut grid);
     }
 
-    // for r in grid.rows() {
-    //     for x in r {
-    //         print!(
-    //             "{}",
-    //             match x {
-    //                 0b0000_0000 => '.',
-    //                 0b0000_0001 => 'D',
-    //                 0b0000_0010 => 'S',
-    //                 0b0000_0011 => 'X',
-    //                 0b0000_0100 => '#',
-    //                 0b0000_0101 => 'd',
-    //                 0b0000_0110 => 's',
-    //                 0b0000_0111 => '+',
-    //                 _ => '!',
-    //             }
-    //         )
-    //     }
-    //     println!();
-    // }
-
     QuestResult::Number(eaten as i64)
 }
 
+const W: usize = 3;
+const H: usize = 4;
+
+fn count_solutions_sheep(
+    sheep: [u8; W],
+    dragon: [u8; 2],
+    hideouts: u64,
+) -> usize {
+    let mut sol = 0;
+
+    let mut legal_moves = false;
+
+    for (i, &s) in sheep.iter().enumerate() {
+        if s != 255
+            && (dragon[0] != i as u8
+                || dragon[1] != s + 1
+                || hideouts & (1 << (s * 8 + i as u8)) != 0)
+        {
+            legal_moves = true;
+
+            let mut new_sheep = sheep;
+
+            new_sheep[i] += 1;
+
+            if new_sheep[i] < H as u8 {
+                sol += count_solutions_dragon(new_sheep, dragon, hideouts);
+            }
+        }
+    }
+
+    if !legal_moves {
+        sol = count_solutions_dragon(sheep, dragon, hideouts);
+    }
+
+    sol
+}
+
+fn count_solutions_dragon(
+    sheep: [u8; W],
+    [x, y]: [u8; 2],
+    hideouts: u64,
+) -> usize {
+    let mut sol = 0;
+
+    for [nx, ny] in [[1, 2], [2, 1]] {
+        for sx in [false, true] {
+            let new_x = match sx {
+                false => {
+                    if nx > x {
+                        continue;
+                    } else {
+                        x - nx
+                    }
+                }
+                true => {
+                    if x + nx >= W as u8 {
+                        continue;
+                    } else {
+                        x + nx
+                    }
+                }
+            };
+
+            for sy in [false, true] {
+                let new_y = match sy {
+                    false => {
+                        if ny > y {
+                            continue;
+                        } else {
+                            y - ny
+                        }
+                    }
+                    true => {
+                        if y + ny >= H as u8 {
+                            continue;
+                        } else {
+                            y + ny
+                        }
+                    }
+                };
+
+                let mut new_sheep = sheep;
+
+                if sheep[new_x as usize] == new_y
+                    && hideouts & (1 << (new_x + new_y * 8)) == 0
+                {
+                    new_sheep[new_x as usize] = 255;
+                }
+
+                if new_sheep.iter().all(|&x| x == 255) {
+                    sol += 1;
+                } else {
+                    sol += count_solutions_sheep(
+                        new_sheep,
+                        [new_x, new_y],
+                        hideouts,
+                    );
+                }
+            }
+        }
+    }
+
+    sol
+}
+
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let mut sheep = [255; W];
+    let mut dragon = [255; 2];
+    let mut hideouts: u64 = 0;
+
+    let mut lines = input.lines();
+
+    for (i, c) in lines.next().unwrap().chars().enumerate() {
+        if c == 'S' {
+            sheep[i] = 0;
+        }
+    }
+
+    let mut base_bit = 1 << 8;
+
+    for l in lines {
+        let mut bit = base_bit;
+
+        for c in l.chars() {
+            if c == '#' {
+                hideouts |= bit;
+            } else if c == 'D' {
+                let i = bit.trailing_zeros() as u8;
+                dragon = [i % 8, i / 8];
+            }
+            bit <<= 1;
+        }
+
+        base_bit <<= 8;
+    }
+
+    println!("dragon: {dragon:?}");
+    println!("sheep: {sheep:?}");
+    for x in &u64::to_ne_bytes(hideouts)[0..H] {
+        println!("{x:03b}");
+    }
+
+    let ans = count_solutions_sheep(sheep, dragon, hideouts);
+
+    QuestResult::Number(ans as i64)
 }
