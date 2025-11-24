@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ndarray::ArrayViewMut2;
 
 use crate::{Quest, QuestResult, util::input_to_grid_mut};
@@ -150,14 +152,21 @@ fn part2(input: String) -> QuestResult {
     QuestResult::Number(eaten as i64)
 }
 
-const W: usize = 3;
-const H: usize = 4;
+const W: usize = 5;
+const H: usize = 6;
 
 fn count_solutions_sheep(
+    memo: &mut HashMap<([u8; W], [u8; 2], bool), usize>,
     sheep: [u8; W],
     dragon: [u8; 2],
     hideouts: u64,
 ) -> usize {
+    let k = (sheep, dragon, false);
+
+    // if let Some(&x) = memo.get(&k) {
+    //     return x;
+    // }
+
     let mut sol = 0;
 
     let mut legal_moves = false;
@@ -175,23 +184,33 @@ fn count_solutions_sheep(
             new_sheep[i] += 1;
 
             if new_sheep[i] < H as u8 {
-                sol += count_solutions_dragon(new_sheep, dragon, hideouts);
+                sol +=
+                    count_solutions_dragon(memo, new_sheep, dragon, hideouts);
             }
         }
     }
 
     if !legal_moves {
-        sol = count_solutions_dragon(sheep, dragon, hideouts);
+        sol = count_solutions_dragon(memo, sheep, dragon, hideouts);
     }
+
+    // memo.insert(k, sol);
 
     sol
 }
 
 fn count_solutions_dragon(
+    memo: &mut HashMap<([u8; W], [u8; 2], bool), usize>,
     sheep: [u8; W],
     [x, y]: [u8; 2],
     hideouts: u64,
 ) -> usize {
+    let k = (sheep, [x, y], true);
+
+    // if let Some(&x) = memo.get(&k) {
+    //     return x;
+    // }
+
     let mut sol = 0;
 
     for [nx, ny] in [[1, 2], [2, 1]] {
@@ -243,6 +262,7 @@ fn count_solutions_dragon(
                     sol += 1;
                 } else {
                     sol += count_solutions_sheep(
+                        memo,
                         new_sheep,
                         [new_x, new_y],
                         hideouts,
@@ -251,6 +271,8 @@ fn count_solutions_dragon(
             }
         }
     }
+
+    // memo.insert(k, sol);
 
     sol
 }
@@ -289,10 +311,12 @@ fn part3(input: String) -> QuestResult {
     println!("dragon: {dragon:?}");
     println!("sheep: {sheep:?}");
     for x in &u64::to_ne_bytes(hideouts)[0..H] {
-        println!("{x:03b}");
+        println!("{x:05b}");
     }
 
-    let ans = count_solutions_sheep(sheep, dragon, hideouts);
+    let mut memo = HashMap::new();
+
+    let ans = count_solutions_sheep(&mut memo, sheep, dragon, hideouts);
 
     QuestResult::Number(ans as i64)
 }
