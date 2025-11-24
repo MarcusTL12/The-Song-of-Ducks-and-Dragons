@@ -163,9 +163,9 @@ fn count_solutions_sheep(
 ) -> usize {
     let k = (sheep, dragon, false);
 
-    // if let Some(&x) = memo.get(&k) {
-    //     return x;
-    // }
+    if let Some(&x) = memo.get(&k) {
+        return x;
+    }
 
     let mut sol = 0;
 
@@ -194,7 +194,7 @@ fn count_solutions_sheep(
         sol = count_solutions_dragon(memo, sheep, dragon, hideouts);
     }
 
-    // memo.insert(k, sol);
+    memo.insert(k, sol);
 
     sol
 }
@@ -207,9 +207,9 @@ fn count_solutions_dragon(
 ) -> usize {
     let k = (sheep, [x, y], true);
 
-    // if let Some(&x) = memo.get(&k) {
-    //     return x;
-    // }
+    if let Some(&x) = memo.get(&k) {
+        return x;
+    }
 
     let mut sol = 0;
 
@@ -272,7 +272,7 @@ fn count_solutions_dragon(
         }
     }
 
-    // memo.insert(k, sol);
+    memo.insert(k, sol);
 
     sol
 }
