@@ -85,5 +85,15 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let columns: Vec<u64> = input.lines().map(|l| l.parse().unwrap()).collect();
+
+    let mean = columns.iter().sum::<u64>() / columns.len() as u64;
+
+    let ans = columns
+        .into_iter()
+        .take_while(|&x| x < mean)
+        .map(|x| mean - x)
+        .sum::<u64>();
+
+    QuestResult::Number(ans as i64)
 }
