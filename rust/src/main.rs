@@ -6,6 +6,7 @@ use home::home_dir;
 
 mod quest1;
 mod quest10;
+mod quest11;
 mod quest2;
 mod quest3;
 mod quest4;
@@ -45,6 +46,7 @@ const QUESTS: &[Quest] = &[
     quest8::PARTS,
     quest9::PARTS,
     quest10::PARTS,
+    quest11::PARTS,
 ];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
