@@ -65,9 +65,45 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn part3(input: String) -> QuestResult {
-    let (top, dial) = build_dial(&input);
+    let mut dial = VecDeque::new();
 
-    let i = ((top as u64 + 202520252025) % dial.len() as u64) as usize;
+    dial.push_back([1u32, 1]);
 
-    QuestResult::Number(dial[i] as i64)
+    let mut top = 0;
+    let mut totlen = 1;
+
+    for ([a, b], front) in input
+        .lines()
+        .map(|l| {
+            let (a, b) = l.split_once('-').unwrap();
+            [a.parse().unwrap(), b.parse().unwrap()]
+        })
+        .zip([false, true].into_iter().cycle())
+    {
+        let rlen = (b - a + 1) as u64;
+        totlen += rlen;
+
+        if front {
+            top += rlen;
+            dial.push_front([b, a]);
+        } else {
+            dial.push_back([a, b]);
+        }
+    }
+
+    let mut i = (top + 202520252025) % totlen;
+
+    for [a, b] in dial {
+        let rlen = (a.abs_diff(b) + 1) as u64;
+
+        if i >= rlen {
+            i -= rlen;
+        } else if a < b {
+            return QuestResult::Number((a as u64 + i) as i64);
+        } else {
+            return QuestResult::Number((a as u64 - i) as i64);
+        }
+    }
+
+    todo!()
 }
