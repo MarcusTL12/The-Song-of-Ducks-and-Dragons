@@ -39,8 +39,17 @@ fn part1(mut input: String) -> QuestResult {
     QuestResult::Number(ans as i64)
 }
 
-fn part2(input: String) -> QuestResult {
-    todo!("\n{input}")
+fn part2(mut input: String) -> QuestResult {
+    let input = unsafe { input.as_mut_vec() };
+
+    input.push(b'\n');
+    let mut grid = input_to_grid_mut(input);
+
+    let (h, w) = grid.dim();
+
+    let ans = recurse(&mut grid, [0, 0]) + recurse(&mut grid, [h - 1, w - 1]);
+
+    QuestResult::Number(ans as i64)
 }
 
 fn part3(input: String) -> QuestResult {
