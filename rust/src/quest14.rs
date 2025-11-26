@@ -1,4 +1,4 @@
-use ndarray::ArrayViewMut2;
+use ndarray::{Array2, ArrayView2, ArrayViewMut2};
 
 use crate::{Quest, QuestResult, util::input_to_grid_mut};
 
@@ -84,6 +84,35 @@ fn part2(mut input: String) -> QuestResult {
     QuestResult::Number(ans as i64)
 }
 
-fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+fn look_for_pattern(grid: ArrayView2<u8>, pattern: ArrayView2<u8>) -> bool {
+    pattern
+        .indexed_iter()
+        .all(|((k, l), &x)| grid[[13 + k, 13 + l]] == x)
+}
+
+fn part3(mut input: String) -> QuestResult {
+    let input = unsafe { input.as_mut_vec() };
+    input.push(b'\n');
+    let mut pattern = input_to_grid_mut(input);
+    for x in pattern.iter_mut() {
+        *x = match *x {
+            b'.' => 0,
+            b'#' => 1,
+            _ => panic!(),
+        }
+    }
+
+    let mut grid = Array2::from_elem([34, 34], 0u8);
+
+    let mut ans = 0;
+
+    for _ in 0..1_000_000 {
+        do_round(grid.view_mut());
+
+        if look_for_pattern(grid.view(), pattern.view()) {
+            ans += grid.iter().map(|&x| x as usize).sum::<usize>()
+        }
+    }
+
+    QuestResult::Number(ans as i64)
 }
