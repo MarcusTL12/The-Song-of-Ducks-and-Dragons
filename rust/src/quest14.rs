@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bitarray::BitArray;
 use ndarray::ArrayViewMut2;
 
@@ -181,15 +183,41 @@ fn part3(input: String) -> QuestResult {
         }
     }
 
-    let mut ans = 0;
+    let mut total = 0;
 
-    for _ in 0..1_000_000_000 {
+    let mut seen = HashMap::new();
+
+    seen.insert(grid, (0, total));
+
+    let mut i = 0;
+
+    const TARGET: usize = 1_000_000_000;
+
+    let mut has_warped = false;
+
+    while i < TARGET {
         grid = do_round_static(grid);
 
         if (grid & stencil) == pattern {
-            ans += grid.count_ones();
+            total += grid.count_ones();
         }
+
+        i += 1;
+
+        if !has_warped && let Some((j, then_total)) = seen.get(&grid) {
+            has_warped = true;
+            let batch_size = i - j;
+            let batch_gain = total - then_total;
+
+            let rounds_left = TARGET - i;
+            let full_batches = rounds_left / batch_size;
+
+            i += full_batches * batch_size;
+            total += full_batches * batch_gain;
+        }
+
+        seen.insert(grid, (i, total));
     }
 
-    QuestResult::Number(ans as i64)
+    QuestResult::Number(total as i64)
 }
