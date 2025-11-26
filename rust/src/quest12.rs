@@ -8,7 +8,7 @@ fn recurse(grid: &mut ArrayViewMut2<u8>, pos: [usize; 2]) -> usize {
     let x = grid[pos];
     grid[pos] = 0;
 
-    let mut exploded = 0;
+    let mut exploded = 1;
 
     for dir in [[-1, 0], [1, 0], [0, -1], [0, 1]] {
         let mut new_pos = pos;
@@ -17,8 +17,11 @@ fn recurse(grid: &mut ArrayViewMut2<u8>, pos: [usize; 2]) -> usize {
             *q = (*q as isize + dq) as usize;
         }
 
-        if let Some(&y) = grid.get(pos) {
-
+        if let Some(&y) = grid.get(new_pos)
+            && y != 0
+            && y <= x
+        {
+            exploded += recurse(grid, new_pos);
         }
     }
 
@@ -29,9 +32,11 @@ fn part1(mut input: String) -> QuestResult {
     let input = unsafe { input.as_mut_vec() };
 
     input.push(b'\n');
-    let grid = input_to_grid_mut(input);
+    let mut grid = input_to_grid_mut(input);
 
-    todo!()
+    let ans = recurse(&mut grid, [0, 0]);
+
+    QuestResult::Number(ans as i64)
 }
 
 fn part2(input: String) -> QuestResult {
