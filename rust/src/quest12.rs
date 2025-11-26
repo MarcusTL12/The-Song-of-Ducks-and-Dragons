@@ -1,4 +1,5 @@
 use ndarray::{ArrayView2, ArrayViewMut2};
+use rayon::prelude::*;
 
 use crate::{Quest, QuestResult, util::input_to_grid_mut};
 
@@ -58,17 +59,17 @@ fn part2(mut input: String) -> QuestResult {
 }
 
 fn optimize_fireball(grid: ArrayView2<u8>) -> [usize; 2] {
-    let (i, j) = grid
-        .indexed_iter()
-        .max_by_key(|&((i, j), _)| {
+    let (h, w) = grid.dim();
+
+    (0..w)
+        .into_par_iter()
+        .flat_map(|j| (0..h).into_par_iter().map(move |i| [i, j]))
+        .max_by_key(|&pos| {
             let mut grid_copy = grid.to_owned();
 
-            recurse(&mut grid_copy.view_mut(), [i, j])
+            recurse(&mut grid_copy.view_mut(), pos)
         })
         .unwrap()
-        .0;
-
-    [i, j]
 }
 
 fn part3(mut input: String) -> QuestResult {
