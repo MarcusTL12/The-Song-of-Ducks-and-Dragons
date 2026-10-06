@@ -385,7 +385,7 @@ fn part3(input: String) -> QuestResult {
                         + (pos[0] - newpos[0]).abs()
                         + (pos[1] - newpos[1]).abs();
 
-                    ((*newpos, new_l), -new_l)
+                    ((*newpos, new_l), -new_l - h(newpos))
                 })
             })
             .collect();
