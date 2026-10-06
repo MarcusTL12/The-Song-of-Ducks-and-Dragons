@@ -1,4 +1,4 @@
-#![feature(array_windows, iter_map_windows, deque_extend_front)]
+#![feature(iter_map_windows, deque_extend_front)]
 
 use std::{env, fmt::Display, fs::read_to_string, time::Instant};
 
