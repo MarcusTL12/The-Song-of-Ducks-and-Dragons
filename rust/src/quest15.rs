@@ -1,8 +1,10 @@
 use std::collections::{BTreeMap, HashSet, VecDeque};
 
+use priority_queue::PriorityQueue;
+
 use crate::{Quest, QuestResult};
 
-pub const PARTS: Quest = [part1, part1, part3];
+pub const PARTS: Quest = [part1, part3, part3];
 
 fn part1(input: String) -> QuestResult {
     let mut walls = HashSet::new();
@@ -201,17 +203,22 @@ fn part3(input: String) -> QuestResult {
 
     let dest = pos;
 
-    let mut queue = VecDeque::new();
+    let h =
+        |[x, y]: [i64; 2]| (x.abs_diff(dest[0]) + y.abs_diff(dest[1])) as i64;
+
+    let mut queue = PriorityQueue::new();
     let mut seen = HashSet::new();
-    queue.push_back(([0, 0], 0));
+    queue.push(([0, 0], 0), -h([0, 0]));
     seen.insert([0, 0]);
 
     const DIRS: [[i64; 2]; 4] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
-    while let Some((pos, l)) = queue.pop_front() {
+    while let Some(((pos, l), _)) = queue.pop() {
         if pos == dest {
             return QuestResult::Number(l);
         }
+
+        seen.insert(pos);
 
         for dir in DIRS {
             let newpos = [pos[0] + dir[0], pos[1] + dir[1]];
@@ -229,8 +236,7 @@ fn part3(input: String) -> QuestResult {
                     || vertical_collision
                     || seen.contains(&newpos))
             {
-                seen.insert(newpos);
-                queue.push_back((newpos, l + 1));
+                queue.push((newpos, l + 1), -l - h(newpos));
             }
         }
     }
