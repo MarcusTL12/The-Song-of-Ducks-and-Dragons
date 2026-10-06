@@ -345,6 +345,9 @@ fn part3(input: String) -> QuestResult {
 
     nodes.sort_by_key(h);
 
+    let horizontal: Vec<_> = horizontal.into_iter().collect();
+    let vertical: Vec<_> = vertical.into_iter().collect();
+
     let mut queue = PriorityQueue::new();
     let mut seen = HashSet::new();
     queue.push(([0, 0], 0), 0);
