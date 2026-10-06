@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashSet, VecDeque};
 
 use priority_queue::PriorityQueue;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::{Quest, QuestResult};
 
@@ -360,30 +361,38 @@ fn part3(input: String) -> QuestResult {
 
         seen.insert(pos);
 
-        for newpos in &nodes {
-            let horizontal_collision = horizontal
-                .iter()
-                .flat_map(|(y, r)| r.ranges.iter().map(move |r| (y, r)))
-                .any(|(y, r)| {
-                    line_intersection_horizontal([pos, *newpos], *r, *y)
-                });
+        let tmp: Vec<_> = nodes
+            .par_iter()
+            .filter_map(|newpos| {
+                let horizontal_collision = horizontal
+                    .iter()
+                    .flat_map(|(y, r)| r.ranges.iter().map(move |r| (y, r)))
+                    .any(|(y, r)| {
+                        line_intersection_horizontal([pos, *newpos], *r, *y)
+                    });
 
-            let vertical_collision = vertical
-                .iter()
-                .flat_map(|(x, r)| r.ranges.iter().map(move |r| (x, r)))
-                .any(|(x, r)| {
-                    line_intersection_vertical([pos, *newpos], *x, *r)
-                });
+                let vertical_collision = vertical
+                    .iter()
+                    .flat_map(|(x, r)| r.ranges.iter().map(move |r| (x, r)))
+                    .any(|(x, r)| {
+                        line_intersection_vertical([pos, *newpos], *x, *r)
+                    });
 
-            if !(horizontal_collision
-                || vertical_collision
-                || seen.contains(newpos))
-            {
-                let new_l =
-                    l + (pos[0] - newpos[0]).abs() + (pos[1] - newpos[1]).abs();
+                (!(horizontal_collision
+                    || vertical_collision
+                    || seen.contains(newpos)))
+                .then(|| {
+                    let new_l = l
+                        + (pos[0] - newpos[0]).abs()
+                        + (pos[1] - newpos[1]).abs();
 
-                queue.push_increase((*newpos, new_l), -new_l - h(newpos));
-            }
+                    ((*newpos, new_l), -new_l - h(newpos))
+                })
+            })
+            .collect();
+
+        for (x, p) in tmp {
+            queue.push_increase(x, p);
         }
     }
 
