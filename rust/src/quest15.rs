@@ -192,7 +192,7 @@ impl Ranges {
 //
 // D = (ax2 - ax1) * (by1 - by2) - (bx1 - bx2) * (ay2 - ay1)
 //
-// t * D = (by1 - by2) * (bx1 - ax1) - (bx2 - bx1) * (by1 - ay1)
+// t * D = (by1 - by2) * (bx1 - ax1) + (bx2 - bx1) * (by1 - ay1)
 // s * D = (ax2 - ax1) * (by1 - ay1) - (ay2 - ay1) * (bx1 - ax1)
 
 fn line_intersection_horizontal(
@@ -202,7 +202,7 @@ fn line_intersection_horizontal(
 ) -> bool {
     // D = - (bx1 - bx2) * (ay2 - ay1)
     //
-    // t * D =                           - (bx2 - bx1) * (by1 - ay1)
+    // t * D =                           + (bx2 - bx1) * (by1 - ay1)
     // s * D = (ax2 - ax1) * (by1 - ay1) - (ay2 - ay1) * (bx1 - ax1)
 
     let d = -(bx1 - bx2) * (ay2 - ay1);
@@ -212,7 +212,7 @@ fn line_intersection_horizontal(
         let axr = ax1.min(ax2)..=ax1.max(ax2);
         ay1 == by && (axr.contains(&bx1) || axr.contains(&bx2))
     } else {
-        let td = -(bx2 - bx1) * (by - ay1);
+        let td = (bx2 - bx1) * (by - ay1);
         let sd = (ax2 - ax1) * (by - ay1) - (ay2 - ay1) * (bx1 - ax1);
 
         let (td, sd, d) = if d < 0 { (-td, -sd, -d) } else { (td, sd, d) };
@@ -308,7 +308,6 @@ fn part3(input: String) -> QuestResult {
     }
 
     let dest = pos;
-    dbg!(dest);
 
     if let Some(r) = horizontal.get_mut(&0) {
         r.remove_point(0);
@@ -358,8 +357,6 @@ fn part3(input: String) -> QuestResult {
 
         seen.insert(pos);
 
-        println!("\nChecking from {pos:?}");
-
         for newpos in &nodes {
             let horizontal_collision = horizontal
                 .iter()
@@ -379,20 +376,12 @@ fn part3(input: String) -> QuestResult {
                 || vertical_collision
                 || seen.contains(newpos))
             {
-                println!("No intersections found to {newpos:?}");
-
                 let new_l =
                     l + (pos[0] - newpos[0]).abs() + (pos[1] - newpos[1]).abs();
 
-                dbg!(new_l);
-
-                queue.push_increase((*newpos, new_l), -new_l); //  - h(newpos)
-            } else {
-                println!("No direct path found to {newpos:?}");
+                queue.push_increase((*newpos, new_l), -new_l - h(newpos));
             }
         }
-
-        // queue.clear();
     }
 
     panic!()
