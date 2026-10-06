@@ -363,6 +363,7 @@ fn part3(input: String) -> QuestResult {
 
         let tmp: Vec<_> = nodes
             .par_iter()
+            .filter(|&newpos| !seen.contains(newpos))
             .filter_map(|newpos| {
                 let horizontal_collision = horizontal
                     .iter()
@@ -371,22 +372,20 @@ fn part3(input: String) -> QuestResult {
                         line_intersection_horizontal([pos, *newpos], *r, *y)
                     });
 
-                let vertical_collision = vertical
-                    .iter()
-                    .flat_map(|(x, r)| r.ranges.iter().map(move |r| (x, r)))
-                    .any(|(x, r)| {
-                        line_intersection_vertical([pos, *newpos], *x, *r)
-                    });
+                let collision = horizontal_collision
+                    || vertical
+                        .iter()
+                        .flat_map(|(x, r)| r.ranges.iter().map(move |r| (x, r)))
+                        .any(|(x, r)| {
+                            line_intersection_vertical([pos, *newpos], *x, *r)
+                        });
 
-                (!(horizontal_collision
-                    || vertical_collision
-                    || seen.contains(newpos)))
-                .then(|| {
+                (!(collision || seen.contains(newpos))).then(|| {
                     let new_l = l
                         + (pos[0] - newpos[0]).abs()
                         + (pos[1] - newpos[1]).abs();
 
-                    ((*newpos, new_l), -new_l - h(newpos))
+                    ((*newpos, new_l), -new_l)
                 })
             })
             .collect();
