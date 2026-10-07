@@ -16,13 +16,13 @@ fn part2(input: String) -> QuestResult {
     let mut wall: Vec<u32> =
         input.split(',').map(|x| x.parse().unwrap()).collect();
 
-    let mut spell = Vec::new();
+    let mut spellprod = 1;
 
     for n in 1.. {
         let &m = wall.iter().skip(n - 1).step_by(n).min().unwrap();
 
         for _ in 0..m {
-            spell.push(n);
+            spellprod *= n;
         }
 
         for x in wall.iter_mut().skip(n - 1).step_by(n) {
@@ -34,9 +34,7 @@ fn part2(input: String) -> QuestResult {
         }
     }
 
-    let ans: usize = spell.iter().product();
-
-    QuestResult::Number(ans as i64)
+    QuestResult::Number(spellprod as i64)
 }
 
 fn part3(input: String) -> QuestResult {
