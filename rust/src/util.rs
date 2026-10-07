@@ -1,6 +1,6 @@
 use ndarray::{s, ArrayView2, ArrayViewMut2};
 
-pub fn _input_to_grid(input: &[u8]) -> ArrayView2<'_, u8> {
+pub fn input_to_grid(input: &[u8]) -> ArrayView2<'_, u8> {
     let w = input
         .iter()
         .enumerate()

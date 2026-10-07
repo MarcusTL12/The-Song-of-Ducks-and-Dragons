@@ -12,6 +12,7 @@ mod quest13;
 mod quest14;
 mod quest15;
 mod quest16;
+mod quest17;
 mod quest2;
 mod quest3;
 mod quest4;
@@ -57,6 +58,7 @@ const QUESTS: &[Quest] = &[
     quest14::PARTS,
     quest15::PARTS,
     quest16::PARTS,
+    quest17::PARTS,
 ];
 
 fn load_input(quest: usize, part: usize, example: usize) -> String {
