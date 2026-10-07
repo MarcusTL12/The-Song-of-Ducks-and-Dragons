@@ -19,11 +19,14 @@ fn part2(input: String) -> QuestResult {
     let mut spell = Vec::new();
 
     for n in 1.. {
-        while wall.iter().skip(n - 1).step_by(n).all(|&x| x > 0) {
+        let &m = wall.iter().skip(n - 1).step_by(n).min().unwrap();
+
+        for _ in 0..m {
             spell.push(n);
-            for x in wall.iter_mut().skip(n - 1).step_by(n) {
-                *x -= 1;
-            }
+        }
+
+        for x in wall.iter_mut().skip(n - 1).step_by(n) {
+            *x -= m;
         }
 
         if wall.iter().all(|&x| x == 0) {
