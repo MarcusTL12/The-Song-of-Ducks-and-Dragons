@@ -1,14 +1,11 @@
 use std::{
-    collections::{HashMap, HashSet, VecDeque},
+    collections::{HashMap, HashSet},
     f64::consts::PI,
 };
 
 use priority_queue::PriorityQueue;
 
-use crate::{
-    Quest, QuestResult,
-    util::{input_to_grid, input_to_grid_mut},
-};
+use crate::{Quest, QuestResult, util::input_to_grid};
 
 pub const PARTS: Quest = [part1, part2, part3];
 
@@ -102,9 +99,8 @@ fn compute_winding_angle_step(
 }
 
 fn part3(mut input: String) -> QuestResult {
-    let inpbytes = unsafe { input.as_mut_vec() };
-    inpbytes.push(b'\n');
-    let mut grid = input_to_grid_mut(inpbytes);
+    input.push('\n');
+    let grid = input_to_grid(input.as_bytes());
 
     let [v, s] = {
         let mut v = None;
@@ -128,7 +124,6 @@ fn part3(mut input: String) -> QuestResult {
     let mut queue = PriorityQueue::new();
     let mut seen = HashSet::new();
     let mut exact_angles = HashMap::new();
-    let mut backtrack = HashMap::new();
 
     let start_state = (
         s,
@@ -140,7 +135,7 @@ fn part3(mut input: String) -> QuestResult {
 
     const DIRS: [[isize; 2]; 4] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
-    let (mut state, l) = loop {
+    let l = loop {
         let Some(((pos, minr, ang), l)) = queue.pop() else {
             panic!("No path found!!")
         };
@@ -149,7 +144,7 @@ fn part3(mut input: String) -> QuestResult {
         let exang = exact_angles[&(pos, minr, ang)];
 
         if pos == s && exang.abs() > PI {
-            break ((pos, minr, ang), l);
+            break -l;
         }
 
         for dir in DIRS {
@@ -190,54 +185,10 @@ fn part3(mut input: String) -> QuestResult {
                 continue;
             }
 
-            if queue.get_priority(&newk).is_none_or(|&oldl| oldl < newl) {
-                backtrack.insert(newk, (pos, minr, ang));
-            }
-
             queue.push_increase(newk, newl);
             exact_angles.insert(newk, new_exang);
         }
     };
 
-    dbg!(l);
-
-    grid[state.0] = b'#';
-
-    while state != start_state {
-        state = backtrack[&state];
-
-        grid[state.0] = b'#';
-    }
-
-    let mut queue = VecDeque::new();
-    queue.push_back(v);
-
-    let mut maxr2 = 0;
-
-    while let Some(pos) = queue.pop_front() {
-        let r2 = pos[0].abs_diff(v[0]).pow(2) + pos[1].abs_diff(v[1]).pow(2);
-
-        maxr2 = maxr2.max(r2);
-
-        for dir in DIRS {
-            let newpos = [
-                (pos[0] as isize + dir[0]) as usize,
-                (pos[1] as isize + dir[1]) as usize,
-            ];
-
-            match grid[newpos] {
-                b'.' | b'#' => {}
-                _ => {
-                    queue.push_back(newpos);
-                    grid[newpos] = b'.';
-                }
-            }
-        }
-    }
-
-    dbg!(maxr2);
-
-    println!("{input}");
-
-    todo!()
+    QuestResult::Number(l * (l / 30))
 }
