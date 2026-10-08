@@ -3,6 +3,7 @@ use std::{
     f64::consts::PI,
 };
 
+use ndarray::{Array2, ArrayView2};
 use priority_queue::PriorityQueue;
 
 use crate::{Quest, QuestResult, util::input_to_grid};
@@ -98,6 +99,54 @@ fn compute_winding_angle_step(
     (axb / (al2 * bl2).sqrt()).asin()
 }
 
+const DIRS: [[isize; 2]; 4] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+fn compute_shortest_dist_to_all(
+    grid: ArrayView2<u8>,
+    start: [usize; 2],
+) -> Array2<i32> {
+    let mut queue = PriorityQueue::new();
+    let mut dists = Array2::from_elem(grid.dim(), -1);
+
+    queue.push(start, 0);
+
+    while let Some((pos, l)) = queue.pop() {
+        let n = grid[pos];
+        dists[pos] = -l
+            - match n {
+                b'0'..=b'9' => (n - b'0') as i32,
+                b'S' | b'@' => 0,
+                _ => panic!(),
+            };
+
+        for dir in DIRS {
+            let newpos = [
+                (pos[0] as isize + dir[0]) as usize,
+                (pos[1] as isize + dir[1]) as usize,
+            ];
+
+            if grid.get(newpos).is_none() {
+                continue;
+            }
+
+            if dists[newpos] != -1 {
+                continue;
+            }
+
+            let n = grid[newpos];
+            let newl = match n {
+                b'0'..=b'9' => l - (n - b'0') as i32,
+                b'S' | b'@' => l,
+                _ => panic!(),
+            };
+
+            queue.push_increase(newpos, newl);
+        }
+    }
+
+    dists
+}
+
 fn part3(mut input: String) -> QuestResult {
     input.push('\n');
     let grid = input_to_grid(input.as_bytes());
@@ -121,6 +170,15 @@ fn part3(mut input: String) -> QuestResult {
         [v.unwrap(), s.unwrap()]
     };
 
+    let disthome = compute_shortest_dist_to_all(grid, s);
+
+    // Man-dist back home as minimum remaining time
+    let h = |(pos, _, _): ([usize; _], _, _)| {
+        disthome[pos] as i64
+        // (pos[0].abs_diff(s[0]) + pos[1].abs_diff(s[1])) as i64
+        // 0
+    };
+
     let mut queue = PriorityQueue::new();
     let mut seen = HashSet::new();
     let mut exact_angles = HashMap::new();
@@ -133,12 +191,15 @@ fn part3(mut input: String) -> QuestResult {
     queue.push(start_state, 0);
     exact_angles.insert(start_state, 0.0f64);
 
-    const DIRS: [[isize; 2]; 4] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    let mut i = 0;
 
     let l = loop {
-        let Some(((pos, minr, ang), l)) = queue.pop() else {
+        i += 1;
+        let Some(((pos, minr, ang), d)) = queue.pop() else {
             panic!("No path found!!")
         };
+
+        let l = d + h((pos, minr, ang));
 
         seen.insert((pos, minr, ang));
         let exang = exact_angles[&(pos, minr, ang)];
@@ -168,7 +229,7 @@ fn part3(mut input: String) -> QuestResult {
 
             let n = grid[newpos];
             let newl = match n {
-                b'0'..=b'9' => l - (grid[newpos] - b'0') as i64,
+                b'0'..=b'9' => l - (n - b'0') as i64,
                 b'S' | b'@' => l,
                 _ => panic!(),
             };
@@ -185,10 +246,12 @@ fn part3(mut input: String) -> QuestResult {
                 continue;
             }
 
-            queue.push_increase(newk, newl);
+            queue.push_increase(newk, newl - h(newk));
             exact_angles.insert(newk, new_exang);
         }
     };
+
+    dbg!(i);
 
     QuestResult::Number(l * (l / 30))
 }
