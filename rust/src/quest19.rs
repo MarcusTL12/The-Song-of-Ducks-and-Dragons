@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, mem::swap};
 
 use priority_queue::PriorityQueue;
 
@@ -89,17 +89,18 @@ fn part2(input: String) -> QuestResult {
     let walls: Vec<_> = walls.into_iter().collect();
 
     let mut state = BTreeMap::new();
+    let mut other_state = BTreeMap::<i64, i64>::new();
     state.insert(0, 0);
     let mut x = 0;
 
     for (newx, r) in walls {
-        state = r
-            .iter()
-            .filter_map(|y| {
-                propagate_flaps_to_column(&state, newx - x, y)
-                    .map(|flaps| (y, flaps))
-            })
-            .collect();
+        other_state.clear();
+        other_state.extend(r.iter().filter_map(|y| {
+            propagate_flaps_to_column(&state, newx - x, y)
+                .map(|flaps| (y, flaps))
+        }));
+
+        swap(&mut state, &mut other_state);
 
         x = newx;
     }
