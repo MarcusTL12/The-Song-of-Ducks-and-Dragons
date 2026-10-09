@@ -3,6 +3,8 @@ use crate::{
     QuestResult::{self, Number},
 };
 
+use z3::{Optimize, ast::Int};
+
 pub const PARTS: Quest = [part1, part2, part3];
 
 fn get_energy(
@@ -120,11 +122,31 @@ fn part2(input: String) -> QuestResult {
     Number(ans)
 }
 
-fn part3(input: String) -> QuestResult {
-    let (network_str, test_str) = input.split_once("\n\n\n").unwrap();
-    let plants = parse_network(network_str);
-    let mut energies = vec![None; plants.len()];
+fn get_energy_z3(
+    plants: &[(i64, Vec<(usize, i64)>)],
+    energies: &mut [Option<Int>],
+    i: usize,
+) -> Int {
+    if let Some(energy) = &energies[i - 1] {
+        return energy.clone();
+    }
 
+    let incoming: Int = plants[i - 1]
+        .1
+        .iter()
+        .map(|&(j, t)| t * get_energy_z3(plants, energies, j))
+        .sum();
+
+    let energy = incoming
+        .ge(plants[i - 1].0)
+        .ite(&incoming, &Int::from_i64(0));
+
+    energies[i - 1] = Some(energy.clone());
+
+    energy
+}
+
+fn find_max_value_z3(plants: &[(i64, Vec<(usize, i64)>)]) -> i64 {
     let num_inputs = plants
         .iter()
         .take_while(|plant| {
@@ -132,13 +154,31 @@ fn part3(input: String) -> QuestResult {
         })
         .count();
 
-    let max_energy = (0..2usize.pow(num_inputs as u32))
-        .map(|n| (0..num_inputs).map(move |s| ((n >> s) & 1) as i64))
-        .map(|test| get_energy_for_test(test, &plants, &mut energies))
-        .max()
-        .unwrap();
+    let mut plant_energies: Vec<_> = vec![None; plants.len()];
 
-    dbg!(max_energy);
+    let o = Optimize::new();
+
+    for (i, e) in plant_energies.iter_mut().take(num_inputs).enumerate() {
+        let new_inp = Int::new_const(format!("inp_{}", i + 1));
+        o.assert(new_inp.eq(0) | new_inp.eq(1));
+        *e = Some(new_inp);
+    }
+
+    let output = get_energy_z3(plants, &mut plant_energies, plants.len());
+
+    o.maximize(&output);
+    o.check(&[]);
+    // dbg!(o.get_model().unwrap()); // To check which inputs solved
+
+    o.get_upper(0).unwrap().as_int().unwrap().as_i64().unwrap()
+}
+
+fn part3(input: String) -> QuestResult {
+    let (network_str, test_str) = input.split_once("\n\n\n").unwrap();
+    let plants = parse_network(network_str);
+    let mut energies = vec![None; plants.len()];
+
+    let max_energy = find_max_value_z3(&plants);
 
     let ans = test_str
         .split('\n')
