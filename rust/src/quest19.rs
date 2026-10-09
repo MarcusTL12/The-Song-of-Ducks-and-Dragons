@@ -1,4 +1,7 @@
-use std::{collections::BTreeMap, mem::swap};
+use std::{
+    collections::{BTreeMap, HashMap},
+    mem::swap,
+};
 
 use priority_queue::PriorityQueue;
 
@@ -53,7 +56,7 @@ fn part1(input: String) -> QuestResult {
 }
 
 fn propagate_flaps_to_column(
-    from: &BTreeMap<i64, i64>,
+    from: &HashMap<i64, i64>,
     x: i64,
     y: i64,
 ) -> Option<i64> {
@@ -88,8 +91,8 @@ fn part2(input: String) -> QuestResult {
 
     let walls: Vec<_> = walls.into_iter().collect();
 
-    let mut state = BTreeMap::new();
-    let mut other_state = BTreeMap::<i64, i64>::new();
+    let mut state = HashMap::new();
+    let mut other_state = HashMap::<i64, i64>::new();
     state.insert(0, 0);
     let mut x = 0;
 
