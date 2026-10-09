@@ -104,7 +104,6 @@ fn get_energy_for_test<I: Iterator<Item = i64>>(
 fn part2(input: String) -> QuestResult {
     let (network_str, test_str) = input.split_once("\n\n\n").unwrap();
     let plants = parse_network(network_str);
-
     let mut energies = vec![None; plants.len()];
 
     let ans = test_str
@@ -122,5 +121,37 @@ fn part2(input: String) -> QuestResult {
 }
 
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let (network_str, test_str) = input.split_once("\n\n\n").unwrap();
+    let plants = parse_network(network_str);
+    let mut energies = vec![None; plants.len()];
+
+    let num_inputs = plants
+        .iter()
+        .take_while(|plant| {
+            plant.0 == 1 && plant.1.len() == 1 && plant.1[0] == (0, 1)
+        })
+        .count();
+
+    let max_energy = (0..2usize.pow(num_inputs as u32))
+        .map(|n| (0..num_inputs).map(move |s| ((n >> s) & 1) as i64))
+        .map(|test| get_energy_for_test(test, &plants, &mut energies))
+        .max()
+        .unwrap();
+
+    dbg!(max_energy);
+
+    let ans = test_str
+        .split('\n')
+        .map(|l| {
+            get_energy_for_test(
+                l.split_ascii_whitespace().map(|x| x.parse().unwrap()),
+                &plants,
+                &mut energies,
+            )
+        })
+        .filter(|&x| x != 0)
+        .map(|e| max_energy - e)
+        .sum();
+
+    Number(ans)
 }
