@@ -1,9 +1,34 @@
-use crate::{Quest, QuestResult};
+use crate::{
+    Quest,
+    QuestResult::{self, Number},
+};
 
 pub const PARTS: Quest = [part1, part2, part3];
 
-fn get_energy(plants: &[(u64, Vec<(usize, u64)>)], i: usize) -> u64 {
-    todo!()
+fn get_energy(
+    plants: &[(u64, Vec<(usize, u64)>)],
+    energies: &mut [Option<u64>],
+    i: usize,
+) -> u64 {
+    if let Some(energy) = energies[i] {
+        return energy;
+    }
+
+    let incoming: u64 = plants[i - 1]
+        .1
+        .iter()
+        .map(|&(j, t)| t * get_energy(plants, energies, j))
+        .sum();
+
+    let energy = if incoming >= plants[i - 1].0 {
+        incoming
+    } else {
+        0
+    };
+
+    energies[i] = Some(energy);
+
+    energy
 }
 
 fn part1(input: String) -> QuestResult {
@@ -45,9 +70,12 @@ fn part1(input: String) -> QuestResult {
         })
         .collect();
 
-    println!("{plants:?}");
+    let mut energies = vec![None; plants.len() + 1];
+    energies[0] = Some(1);
 
-    todo!()
+    let ans = get_energy(&plants, &mut energies, plants.len());
+
+    Number(ans as i64)
 }
 
 fn part2(input: String) -> QuestResult {
