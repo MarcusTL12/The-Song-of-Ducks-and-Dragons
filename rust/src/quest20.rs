@@ -162,9 +162,7 @@ fn part3(input: String) -> QuestResult {
                     grid[newpos] = 0;
                     queue.push_back((newpos, l + 1));
                 }
-                2 => {
-                    return Number(l + 1);
-                }
+                2 => return Number(l + 1),
                 _ => panic!(),
             }
         }
