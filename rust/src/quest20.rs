@@ -88,7 +88,7 @@ fn rotate(h: usize, [y, x]: [usize; 2]) -> [usize; 2] {
         // y * yvec + x * xvec = [y, x]
         // [0, h - 1] - y * (-xvec) + x * zvec = [x, h - 1 - x - y]
 
-        [x, h - 1 - x - y]
+        [h - 1 - x - y, y]
     } else {
         // u = h - 1 - x
         // v = h - 1 - y
@@ -106,8 +106,37 @@ fn rotate(h: usize, [y, x]: [usize; 2]) -> [usize; 2] {
         // = [h - 1 - u, 1 + v + u] = [x, 1 + h - 1 - y + h - 1 - x]
         // = [x, 2h - 1 - y - x]
 
-        [x, 2 * h - 1 - y - x]
+        [2 * h - 1 - y - x, y]
     }
+}
+
+fn which_triangle(h: usize, [y, x]: [usize; 2]) -> Option<bool> {
+    ((0..h).contains(&y) && (0..h).contains(&x)).then(|| x + y < h)
+}
+
+fn next_positions(
+    h: usize,
+    [y, x]: [usize; 2],
+) -> impl Iterator<Item = [usize; 2]> {
+    let mut nextpos = [None; 4];
+
+    nextpos[0] = Some([y, x]);
+
+    let [v, u] = [h - 1 - y, h - 1 - x];
+
+    let cur_tri = which_triangle(h, [y, x]).unwrap();
+
+    let candidates = [[v, u], [v + 1, u], [v, u + 1]];
+
+    println!("cnd: {candidates:?}");
+
+    for (a, &b) in nextpos.iter_mut().skip(1).zip(&candidates) {
+        *a = (which_triangle(h, b) == Some(!cur_tri)).then_some(b);
+    }
+
+    nextpos
+        .into_iter()
+        .filter_map(move |p| p.map(|p| rotate(h, p)))
 }
 
 fn part3(input: String) -> QuestResult {
@@ -125,16 +154,14 @@ fn part3(input: String) -> QuestResult {
         }
     }
 
-    let mut s = [h - 2, 2];
-
-    grid[s] = 2;
-
-    for i in 3..=4 {
-        s = rotate(h, s);
-        grid[s] = i;
+    for (i, p) in next_positions(h, [0, 0]).enumerate() {
+        println!("{i}: {p:?}");
+        grid[p] = (i + 2) as u8;
     }
 
     println!("{grid}");
+
+    // println!("{:?}", );
 
     todo!()
 }
