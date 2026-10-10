@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 
+use ndarray::Array2;
+
 use crate::{
     Quest,
     QuestResult::{self, Number},
@@ -68,6 +70,71 @@ fn part2(input: String) -> QuestResult {
     panic!()
 }
 
+fn pack(h: usize, [p, y, x]: [usize; 3]) -> [usize; 2] {
+    if p == 0 {
+        [y, x]
+    } else {
+        [h - 1 - y, h - 1 - x]
+    }
+}
+
+fn rotate(h: usize, [y, x]: [usize; 2]) -> [usize; 2] {
+    if x + y < h {
+        // y * yvec + x * xvec -> [0, h - 1] + y * (-xvec) + x * zvec
+        // yvec = [1, 0]
+        // xvec = [0, 1]
+        // zvec = [1, -1]
+
+        // y * yvec + x * xvec = [y, x]
+        // [0, h - 1] - y * (-xvec) + x * zvec = [x, h - 1 - x - y]
+
+        [x, h - 1 - x - y]
+    } else {
+        // u = h - 1 - x
+        // v = h - 1 - y
+        // [h - 1, h - 1] + u * uvec + v * vvec
+        // -> [h - 1, 1] + u * wvec + v * (-uvec)
+
+        // uvec = [0, -1]
+        // vvec = [-1, 0]
+        // wvec = [-1, 1]
+
+        // [h - 1, h - 1] + u * uvec + v * vvec =
+        // [h - 1 - v, h - 1 - u] = [y, x]
+
+        // [h - 1, 1] + u * wvec + v * (-uvec)
+        // = [h - 1 - u, 1 + v + u] = [x, 1 + h - 1 - y + h - 1 - x]
+        // = [x, 2h - 1 - y - x]
+
+        [x, 2 * h - 1 - y - x]
+    }
+}
+
 fn part3(input: String) -> QuestResult {
-    todo!("\n{input}")
+    let w = input.split('\n').next().unwrap().len();
+    let h = w.div_ceil(2);
+
+    dbg!(w);
+    dbg!(h);
+
+    let mut grid = Array2::from_elem([h, h], 255u8);
+
+    for (y, l) in input.split('\n').enumerate() {
+        for (x, c) in l.chars().filter(|&c| c != '.').enumerate() {
+            grid[pack(h, [x % 2, y, x / 2])] = if c != '#' { 1 } else { 0 };
+        }
+    }
+
+    let mut s = [h - 2, 2];
+
+    grid[s] = 2;
+
+    for i in 3..=4 {
+        s = rotate(h, s);
+        grid[s] = i;
+    }
+
+    println!("{grid}");
+
+    todo!()
 }
