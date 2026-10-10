@@ -118,50 +118,57 @@ fn next_positions(
     h: usize,
     [y, x]: [usize; 2],
 ) -> impl Iterator<Item = [usize; 2]> {
-    let mut nextpos = [None; 4];
-
-    nextpos[0] = Some([y, x]);
-
     let [v, u] = [h - 1 - y, h - 1 - x];
 
     let cur_tri = which_triangle(h, [y, x]).unwrap();
 
     let candidates = [[v, u], [v + 1, u], [v, u + 1]];
 
-    println!("cnd: {candidates:?}");
-
-    for (a, &b) in nextpos.iter_mut().skip(1).zip(&candidates) {
-        *a = (which_triangle(h, b) == Some(!cur_tri)).then_some(b);
-    }
-
-    nextpos
+    [[y, x]]
         .into_iter()
-        .filter_map(move |p| p.map(|p| rotate(h, p)))
+        .chain(
+            candidates
+                .into_iter()
+                .filter(move |&p| which_triangle(h, p) == Some(!cur_tri)),
+        )
+        .map(move |p| rotate(h, p))
 }
 
 fn part3(input: String) -> QuestResult {
     let w = input.split('\n').next().unwrap().len();
     let h = w.div_ceil(2);
 
-    dbg!(w);
-    dbg!(h);
-
     let mut grid = Array2::from_elem([h, h], 255u8);
 
     for (y, l) in input.split('\n').enumerate() {
         for (x, c) in l.chars().filter(|&c| c != '.').enumerate() {
-            grid[pack(h, [x % 2, y, x / 2])] = if c != '#' { 1 } else { 0 };
+            grid[pack(h, [x % 2, y, x / 2])] = match c {
+                '#' | 'S' => 0,
+                'T' => 1,
+                'E' => 2,
+                _ => panic!(),
+            };
         }
     }
 
-    for (i, p) in next_positions(h, [0, 0]).enumerate() {
-        println!("{i}: {p:?}");
-        grid[p] = (i + 2) as u8;
+    let mut queue = VecDeque::new();
+    queue.push_back(([h - 1, 0], 0));
+
+    while let Some((pos, l)) = queue.pop_front() {
+        for newpos in next_positions(h, pos) {
+            match grid[newpos] {
+                0 => {}
+                1 => {
+                    grid[newpos] = 0;
+                    queue.push_back((newpos, l + 1));
+                }
+                2 => {
+                    return Number(l + 1);
+                }
+                _ => panic!(),
+            }
+        }
     }
 
-    println!("{grid}");
-
-    // println!("{:?}", );
-
-    todo!()
+    panic!()
 }
